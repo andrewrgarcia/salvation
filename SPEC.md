@@ -169,7 +169,9 @@ Then one marker line is appended to `convo.md`:
   this affects fur commands only. (fur follow-up, out of scope.)
 
 **Card write-back.** At close, the agent may change three things in the card
-and nothing else:
+and nothing else (`dk save` does exactly these; during a session an agent may
+also add to a card with `dk set`/`todo`/`tick`/`note` — additions and field
+values, never rewording what the user wrote — each undoable with `dk undo`):
 
 - **One `state:` line in `## now`.** The first line of `## now` that starts
   with `state:` is replaced with `state: <the entry's state>`. If there is
@@ -274,7 +276,9 @@ directory):
 | actor | reads | writes |
 |---|---|---|
 | `dk resume` | card, `sessions/chats/*/convo.md` + links, `WHITE.md` via ygg | `RESUME.md` |
-| Cowork, store connected | card + sessions directly; code via a connected repo or a pasted codex | session entry, marker, card write-back |
+| `dk save` | the entry and documents it is given; the card | entry, documents, markers, card write-back — exactly D4's, checked from disk |
+| `dk set` / `todo` / `tick` / `note` | the card | one additive or replacing edit each; the previous version kept in `.undo/` |
+| Cowork, store connected | card + sessions directly; code via a connected repo or a pasted codex | session entry, marker, card write-back (with `dk save` when it has a shell) |
 | Claude Code | `dk resume` output | same as Cowork, with plain file writes |
 | plain chat | pasted `RESUME.md` | nothing; prints the footer and the entry for you to save |
 | fur | `sessions/` as an ordinary archive | — (reads only) |

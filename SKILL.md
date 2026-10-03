@@ -57,7 +57,9 @@ complete instruction.
 Decide this once, at the start, and say which path you took.
 
 - **A — a shell with `dk`.** You can run commands on the user's machine and
-  `dk --version` answers. Use the fast paths below.
+  `dk --version` answers. Use the fast paths below: `dk resume` to orient,
+  the writing verbs to keep the card current, `dk save` to close. No hand
+  steps, no asking the user to run anything.
 - **B — files, no `dk`.** You can read the book (in Cowork: the connected
   folder; `dk where` would print it) but cannot run `dk`. Assemble by hand
   (§1 hand path) and save by hand (§3).
@@ -80,11 +82,11 @@ one card and add `place: <label> <path>` lines under `path:`.
 
 ## 1. Orient — before any work
 
-**A:** `dk resume <card> --out <path outside the book and outside any repo>`
-(`dk resume book/card` or `-b <book>` when there are several books; `--place
-<label>` to limit the code index to one folder; `dk here` from inside a project
-folder prints its card). Read the file it prints. Token cost per part is on
-stderr.
+**A:** `dk resume <card> --out -` prints the resume straight to you (or
+`--out <path outside the book and outside any repo>` for a file). `dk resume
+book/card` or `-b <book>` when there are several books; `--place <label>` to
+limit the code index to one folder; `dk here` from inside a project folder
+prints its card. Token cost per part is on stderr.
 
 **B, hand path**, same order and same output:
 
@@ -128,6 +130,24 @@ current unless a later paste says otherwise.
 Then wait. Do not start work the user has not asked for.
 
 ## 2. Work — stay in lane, read what you touch
+
+- **Keep the card current as you go (path A).** The card is shared state, not
+  the user's private diary, and a fact settled in this session belongs on it
+  when it is settled, not only at close:
+
+  ```bash
+  dk set <card> state "<task in words · criteria met/remaining>"
+  dk set <card> status paused            # any header field; `place <label> <path>`
+  dk todo <card> "<discovered item>"     # - [ ] at the end of ## next
+  dk tick <card> "<text of a box you finished>"
+  dk note <card> "<a fact the next session needs>"            # ## notes
+  dk note <card> --section "open questions" "<a question>"
+  ```
+
+  Add freely; never reword or delete what the user wrote. `dk write <card> -`
+  (whole card) only when the user asks for a restructure. Every one of these
+  keeps the previous version: `dk undo <card>` swaps it back, so say which you
+  ran. On path B make the same edits as minimal file edits.
 
 - **The code part is a map, not the territory.** It lists files; it does not
   contain them. Before changing a file or describing what it does, open it
@@ -230,7 +250,24 @@ options and their costs, the choice and why, what would change it. Revise in
 place; replace by writing a new one and setting the old `status:` to
 `superseded`.
 
-### Where (paths A and B)
+### Path A — one command
+
+Write the entry (and any document) to files outside the book and outside any
+repo, then:
+
+```bash
+dk save <card> <entry.md> [--doc <doc.md>]… [--tick "<box text>"]… [--next "<new item>"]…
+cat entry.md | dk save <card> -        # stdin works too; --dry-run writes nothing
+```
+
+`dk save` does everything below — finds or creates the conversation, names the
+files, appends the markers, sets the card's `state:` from the entry's
+`## state`, ticks and adds what the flags say, and reads it all back. It
+refuses a malformed entry or an ambiguous `--tick` before writing anything; fix
+what it names and run it again. Its stdout lists the files written: that is
+your evidence for "Saved" in the footer.
+
+### Where (path B, by hand — and what `dk save` does for you)
 
 ```
 <book>/sessions/chats/<slug>-<first 8 of conversation_id>/
@@ -302,11 +339,16 @@ dk                         # the list (several books: the index)
 dk add <path>              # new card; no path = an idea
 dk <card> / dk show <card> # read a card
 dk edit <card>             # edit it in the terminal
-dk resume <card> --out F   # RESUME.md: card → ledger → code index
+dk resume <card> --out F   # RESUME.md: card → ledger → code index (F = - prints it)
 dk resume <card> --place L # one of several places
 dk here                    # which card owns this folder
 dk book                    # the books; -b <book> or book/card for one command
 dk where [-b book]         # a book's folder
+dk set <card> <key> <value> # header field, or `state` in ## now
+dk todo / tick / note <card> <text>   # ## next item, tick a box, ## notes paragraph
+dk write <card> -          # whole card from stdin, id kept (only when asked)
+dk undo <card>             # previous version back (again: forward)
+dk save <card> <entry|->   # close: entry → ledger, state → card (--doc --tick --next --dry-run)
 
 ygg --white WHITE.md --out F         # index of the manifest's files (what dk runs)
 ygg --white WHITE.md --contents      # with bodies, for a chat that cannot read the repo
@@ -319,6 +361,7 @@ fur unlock / fur lock      # the ledger is encrypted at rest if the user chose t
 fur rebuild                # .fur/ is only an index; the markdown is the archive
 ```
 
-docket never writes the ledger and never calls fur; whoever ends the session
-writes the entry — you, through this skill. The three tools stay separate on
+docket files the entry with `dk save` but never decides what goes in it and
+never calls fur; whoever ends the session writes the entry — you, through this
+skill. The three tools stay separate on
 purpose: each is replaceable, and the files outlive all of them.
