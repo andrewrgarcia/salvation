@@ -1,4 +1,8 @@
-# Salvation
+<p align="center">
+  <img src="assets/salvation.png" alt="Salvation" width="640"/>
+</p>
+
+<h1 align="center">Salvation</h1>
 
 A protocol for picking a project up in any fresh chat, agent or model, and
 putting it down again without losing *why* things were decided.

@@ -3,6 +3,7 @@ name: salvation
 description: Session protocol that joins three tools — docket (`dk`, project cards + session ledger), yggdrasil (`ygg`, the code index) and fur (the plain-markdown archive the ledger lives in) — so a project can be picked up by any fresh chat, agent or model and put down again without losing why things were decided. Use in EVERY session on a project that has a docket card, or when the user says "salvation", pastes a `RESUME.md` (`<!-- dk:resume v1 -->`), a ygg codex, or asks to resume, continue, hand off or close work on a project. Use it even when the user does not name any of the tools.
 license: MIT
 metadata:
+  author: Andrew Ryan Garcia
   argument-hint: "[card name, or path to a RESUME.md]"
 ---
 
@@ -40,6 +41,17 @@ remaining criteria. The frozen contract is `SPEC.md` in the salvation repo
 disagrees with this skill, it wins. The tools named here are the reference
 implementation: anything that reads and writes the same files conforms.
 
+This skill supersedes session-pilot, session-resume and session-close, if
+they exist. If any of them is loaded too, follow this one where they differ.
+A project's *own* rules are different: its `CLAUDE.md` / `AGENTS.md`, or a project-specific skill
+(a `<project>-session-pilot` with its own routing table and review
+boundaries), are binding on what they cover and outrank §2 here. This skill
+still governs how the session resumes and how it saves.
+
+The user does not need to explain any of this. "Use salvation", plus a card
+name or just a folder (a path, a shell prompt, a pasted `git status`), is a
+complete instruction.
+
 ## 0. Find out where you are
 
 Decide this once, at the start, and say which path you took.
@@ -52,6 +64,14 @@ Decide this once, at the start, and say which path you took.
 - **C — plain chat.** You can read only what the user pastes. Ask for
   `RESUME.md` (and `ygg --white WHITE.md --contents` beside it if the task
   needs file bodies). At the end, print what must be saved and where.
+
+**Which card.** If the user named it, use that. If they only pointed at a
+folder: on path A run `dk here` from it; on path B read the header of each
+top-level card in the book and take the one whose `path:` or a `place:`
+contains that folder (the deepest match wins; two cards tied: ask which). On
+path C ask for `dk resume "$(dk here)"` run from that folder. **The book must
+be reachable** for A and B: if it is not connected, ask once for that folder
+(`dk where` prints it), and do nothing else until it is.
 
 A project with **no card yet** gets one before anything else: `dk add <path>`
 (no path = an idea), then a `WHITE.md` in the repo listing the files that
