@@ -102,8 +102,10 @@ are limits, not advice:
 6. **Mechanical work is not premium work.** If what remains is renames, text
    moves or boilerplate, say so and recommend the cheaper tier in `next`
    rather than finishing it slowly at high effort.
-7. **Time it.** Note the clock at orient and at save; the entry's title ends
-   `· took <N> min`. That number is how the user checks these rules work.
+7. **Time it.** On path A `dk resume` starts the clock and `dk save` writes
+   `· took <N> min` into the title itself — do not write it. On paths B and C,
+   read the clock (never guess) at orient and at save and end the title with
+   it. That number is how the user checks these rules work; `dk stats` reads it.
 
 ## 1. Orient — before any work
 
