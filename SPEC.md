@@ -326,9 +326,11 @@ lines). Three rules keep a card to what is still open.
   indented lines under it), verbatim. Nothing else: open boxes, prose, notes
   and open questions stay where they are.
 - When: `dk save` sweeps the boxes that were already ticked when it started.
-  A box ticked *in* this save stays on the card until the next one, so the
-  next session still sees what the last one finished.
-  `dk sweep <card>` does the same on demand.
+  A box ticked by this save's `--tick` stays on the card until the next one,
+  so the next session still sees what the last one finished; a box ticked
+  earlier — `dk tick` during the session included — moves, and the entry's
+  `## done` is the record of it. `dk sweep <card>` sweeps everything on
+  demand; `dk save --no-sweep` skips it.
 - How it lands: appended to `archive/<name>-<id>.md` under one heading per
   sweep, `## <YYYY-MM-DD> · swept from <section>`, so the archive reads as a
   dated list of what was finished. Never rewritten.
@@ -358,19 +360,31 @@ status: open
 - `dk resume` lists open issues under `### issues`, one line each; closed
   ones are not listed. Like documents, they are never inlined and never count
   toward the three entries.
+- `dk save --issue <file>` writes one (repeatable); saving the same name
+  again revises it in place, which is how it is closed.
 - `dk save` warns about open boxes over the limit. It never shortens them:
   rewording is the user's call, or an agent's when the user asks.
 
 **3. `dk save` commits the book.**
 
-- When the book is a git repository, `dk save` ends with one commit of
-  exactly the files it wrote (entry, documents, issues, markers, the card,
-  the archive): `dk save <card>: <first line of the entry's next>`. Other
-  changes in the book are left unstaged.
-- It never pushes, amends, or commits outside the book. Not a git
-  repository: stderr says so and the save still succeeds.
+- When the book is the top of its own git repository, `dk save` ends with one
+  commit of exactly the files it wrote (entry, documents, issues, markers, the
+  card, the archive): `dk save <card>: <first line of the entry's next>`.
+  `dk sweep` commits the card and the archive: `dk sweep <card>`. Other
+  changes in the book are left unstaged; `.undo/` is never committed.
+- It never pushes or amends. A book inside some other repository is not
+  committed to. Not a repository, or a failed commit: stderr says so and the
+  save still succeeds, because every file was already written and read back.
+  `--no-commit` skips it.
 - This is what makes the sweep safe: every sweep has a commit behind it.
   `.undo/` keeps one version; git keeps all of them.
+
+**Opting a book out.** A book whose boxes are contracts that must stay on the
+card word for word — a meta-research seed's kill box, which verify checks is
+unchanged since the card's first commit — puts `compact = false` in a
+`BOOK.toml` at its top. In that book nothing is swept, long boxes are not
+flagged, and no agent proposes moving them; the commit (rule 3) still
+applies. `BOOK.toml` is not `.md`, so it is never a card.
 
 *Rejected:* deleting ticked boxes outright and trusting git alone. Correct,
 but `git log -S` needs a shell; the archive is readable on path B and C.

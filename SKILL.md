@@ -37,7 +37,7 @@ and `rejected` with reasons, not a transcript. Agents working across context
 windows fail by over-reaching or by declaring the job done early (Anthropic's
 long-running-agent harness), so each entry names the task in flight and its
 remaining criteria. The frozen contract is `SPEC.md` in the salvation repo
-(D1–D5; formerly docket's `docs/resume-contract.md`); if it is reachable and
+(D1–D6; formerly docket's `docs/resume-contract.md`); if it is reachable and
 disagrees with this skill, it wins. The tools named here are the reference
 implementation: anything that reads and writes the same files conforms.
 
@@ -84,7 +84,8 @@ one card and add `place: <label> <path>` lines under `path:`.
 
 **A:** `dk resume <card> --out -` prints the resume straight to you (or
 `--out <path outside the book and outside any repo>` for a file). `dk resume
-book/card` or `-b <book>` when there are several books; `--place <label>` to
+book/card` or `-b <book>` when there are several books (the current book
+sticks between commands, so name it rather than trust it); `--place <label>` to
 limit the code index to one folder; `dk here` from inside a project folder
 prints its card. Token cost per part is on stderr.
 
@@ -99,8 +100,8 @@ prints its card. Token cost per part is on stderr.
 3. **Linked files** — each `<!-- fur:msg … link=<file> -->` line in
    `convo.md`, oldest first, names a file in the same folder. Classify by first
    line only: `<!-- dk:session` is an entry, `<!-- dk:doc` is a document,
-   `<!-- dk:issue` an issue, anything else is chatter to ignore. Never follow a link that is absolute or
-   has `..`; say so. A missing link gets one line.
+   `<!-- dk:issue` an issue, anything else is chatter to ignore. Never follow
+   a link that is absolute or has `..`; say so. A missing link gets one line.
 4. **Sessions, newest first** — the newest three entries whole, separated by
    `---`. The next ten as one line each under `### earlier`:
    `- SES-<stamp> · <first line of its ## next> · <date>`; anything older is
@@ -151,7 +152,7 @@ Then wait. Do not start work the user has not asked for.
   ```bash
   dk set <card> state "<task in words · criteria met/remaining>"
   dk set <card> status paused            # any header field; `place <label> <path>`
-  dk todo <card> "<discovered item>"     # - [ ] at the end of ## next
+  dk todo <card> "<discovered item>"     # an open box at the end of ## next
   dk tick <card> "<text of a box you finished>"
   dk note <card> "<a fact the next session needs>"            # ## notes
   dk note <card> --section "open questions" "<a question>"
@@ -163,8 +164,10 @@ Then wait. Do not start work the user has not asked for.
   as an issue (`ISSUE-YYYYMMDD-<slug>.md`, `<!-- dk:issue v1 -->`, a title,
   `status: open`) in the card's conversation and put one line on the card
   pointing at it. If `## card` opens with an over-budget line, say so in the
-  report and propose items to move; move them only when the user agrees. `dk write <card> -`
-  (whole card) only when the user asks for a restructure. Every one of these
+  report and propose items to move; move them only when the user agrees.
+  A book with `compact = false` in its `BOOK.toml` (the meta-research book)
+  opts out: never sweep there, and never propose moving its long boxes.
+  `dk write <card> -` (whole card) only when the user asks for a restructure. Every one of these
   keeps the previous version: `dk undo <card>` swaps it back, so say which you
   ran. On path B make the same edits as minimal file edits.
 
@@ -283,7 +286,7 @@ Write the entry (and any document) to files outside the book and outside any
 repo, then:
 
 ```bash
-dk save <card> <entry.md> [--doc <doc.md>]… [--tick "<box text>"]… [--next "<new item>"]…
+dk save <card> <entry.md> [--doc <doc.md>]… [--issue <issue.md>]… [--tick "<box text>"]… [--next "<new item>"]…
 cat entry.md | dk save <card> -        # stdin works too; --dry-run writes nothing
 ```
 
@@ -294,12 +297,14 @@ refuses a malformed entry or an ambiguous `--tick` before writing anything; fix
 what it names and run it again. Its stdout lists the files written: that is
 your evidence for "Saved" in the footer.
 
-With SPEC D6 in docket, `dk save` also sweeps the ticked boxes to the archive,
-takes issue files (`--issue <issue.md>`), and commits what it wrote to the
-book. If `dk sweep --help` fails, this docket predates D6: after `dk save`,
-do the sweep by hand (§3, step 4) and commit only the files written, with
-`git -C <book> commit -m "dk save <card>: <first line of next>" -- <files>`.
-Never push.
+From docket 0.3.0 `dk save` also sweeps the boxes ticked before it to the
+card's archive, writes issue files (`--issue`), and commits exactly what it
+wrote to the book (stderr says `committed the book: <sha>`, or why not). If
+`dk --version` is below 0.3.0, after `dk save` do the sweep by hand (§3,
+step 4) and commit only the files written:
+`git -C <book> add -- <files> && git -C <book> commit -m "dk save <card>: <first line of next>" -- <files>`.
+Never push. On path B, when you cannot run git, say the book has uncommitted
+files in the footer's Saved line (it is not a blocker: git shows it).
 
 ### Where (path B, by hand — and what `dk save` does for you)
 
@@ -308,6 +313,8 @@ Never push.
     convo.md
     SES-…md
     DOC-…md
+    ISSUE-…md
+<book>/archive/<name>-<id>.md   ← swept boxes (D6), never read by a resume
 ```
 
 1. Find the conversation tagged `dk-<id>` (as in §1.2). None: create the
@@ -336,7 +343,8 @@ Never push.
    line in `## now` with the entry's state (insert one if missing); tick
    `[ ]` → `[x]` for items finished, matched by existing text, never
    reworded; append new `[ ]` items to the end of `## next`. Nothing else in
-   the card moves. Boxes ticked now stay until the next save.
+   the card moves. Boxes ticked now stay until the next save. Skip the sweep
+   when the book's `BOOK.toml` says `compact = false`.
 5. **Verify from disk, then tell the truth.** Re-read each file you wrote
    (not the tool's "written" reply); check the markers are the last lines of
    `convo.md`; use a fresh output name per write. With `dk`, `dk resume
@@ -374,20 +382,21 @@ deliberately.
 ## Reference — the commands
 
 ```bash
-dk                         # the list (several books: the index)
+dk                         # the current book's cards (several books, none current: the book list)
 dk add <path>              # new card; no path = an idea
-dk <card> / dk show <card> # read a card
+dk show <card>             # read a card (fold view in a terminal, plain when piped); bare `dk <card>` is now an error
 dk edit <card>             # edit it in the terminal
 dk resume <card> --out F   # RESUME.md: card → ledger → git line + code index (F = - prints it)
 dk resume <card> --place L # one of several places
 dk here                    # which card owns this folder
-dk book                    # the books; -b <book> or book/card for one command
+dk book [name|hash]        # list the books (with HASH), or make one current — it sticks; -b <book> or book/card for one command
 dk where [-b book]         # a book's folder
 dk set <card> <key> <value> # header field, or `state` in ## now
 dk todo / tick / note <card> <text>   # ## next item, tick a box, ## notes paragraph
 dk write <card> -          # whole card from stdin, id kept (only when asked)
 dk undo <card>             # previous version back (again: forward)
-dk save <card> <entry|->   # close: entry → ledger, state → card (--doc --tick --next --dry-run)
+dk save <card> <entry|->   # close: entry → ledger, state → card, sweep, commit (--doc --issue --tick --next --no-sweep --no-commit --dry-run)
+dk sweep <card>            # ticked boxes → archive/<name>-<id>.md now, and commit (--dry-run)
 
 ygg --white WHITE.md --out F         # index of the manifest's files (what dk runs)
 ygg --white WHITE.md --contents      # with bodies, for a chat that cannot read the repo
