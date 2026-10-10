@@ -414,7 +414,7 @@ dk                         # the current book's cards (several books, none curre
 dk add <path>              # new card; no path = an idea
 dk show <card>             # read a card (fold view in a terminal, plain when piped); bare `dk <card>` is now an error
 dk edit <card>             # edit it in the terminal
-dk resume <card> --out F   # RESUME.md: card → ledger → git line + code index (F = - prints it)
+dk resume <card> --out F   # RESUME.md: card → ledger → git line + code index (F = - prints it); starts the session clock
 dk resume <card> --place L # one of several places
 dk here                    # which card owns this folder
 dk book [name|hash]        # list the books (with HASH), or make one current — it sticks; -b <book> or book/card for one command
@@ -423,8 +423,9 @@ dk set <card> <key> <value> # header field, or `state` in ## now
 dk todo / tick / note <card> <text>   # ## next item, tick a box, ## notes paragraph
 dk write <card> -          # whole card from stdin, id kept (only when asked)
 dk undo <card>             # previous version back (again: forward)
-dk save <card> <entry|->   # close: entry → ledger, state → card, sweep, commit (--doc --issue --tick --next --no-sweep --no-commit --dry-run)
+dk save <card> <entry|->   # close: entry → ledger, state → card, took, sweep, commit (--doc --issue --tick --next --no-sweep --no-commit --dry-run)
 dk sweep <card>            # ticked boxes → archive/<name>-<id>.md now, and commit (--dry-run)
+dk stats [card]            # one row per saved session: when, minutes, done items, model
 
 ygg --white WHITE.md --out F         # index of the manifest's files (what dk runs)
 ygg --white WHITE.md --contents      # with bodies, for a chat that cannot read the repo
