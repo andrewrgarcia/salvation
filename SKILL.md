@@ -80,6 +80,31 @@ A project with **no card yet** gets one before anything else: `dk add <path>`
 matter. That is the whole onboarding. Several folders for one project: keep
 one card and add `place: <label> <path>` lines under `path:`.
 
+## Speed — budgets, not suggestions
+
+A slow session is almost never slow because the model thinks slowly. It is
+slow because it reads, explores and re-checks more than the task needs. These
+are limits, not advice:
+
+1. **Orient is one step.** Path A: `dk resume <card> --out -`, nothing else,
+   until the user says what to do. Path B: the card above `## readme` and the
+   newest three entries; documents, issues and older entries only by name,
+   when the task needs them. Never list the book recursively; list its top
+   level only.
+2. **Read once.** A file is opened once per session unless it was written
+   since. Verifying means re-reading what you wrote, never what you read.
+3. **Stay inside the manifest.** Open files outside `WHITE.md` only when the
+   task names them or a file you are changing imports them. No exploring.
+4. **Check at the end.** Tests and builds run once, before the save (plus once
+   at the start if the task is to fix a failure). Not after every edit.
+5. **Close in one move.** `dk save` (or the §3 hand path), the footer, stop.
+   No recap of the session, no second pass "to make sure".
+6. **Mechanical work is not premium work.** If what remains is renames, text
+   moves or boilerplate, say so and recommend the cheaper tier in `next`
+   rather than finishing it slowly at high effort.
+7. **Time it.** Note the clock at orient and at save; the entry's title ends
+   `· took <N> min`. That number is how the user checks these rules work.
+
 ## 1. Orient — before any work
 
 **A:** `dk resume <card> --out -` prints the resume straight to you (or
@@ -234,7 +259,7 @@ line, the reason is a document. A spec the *code* obeys goes in the repo (e.g.
 
 ```markdown
 <!-- dk:session v1 -->
-# <card> · <YYYY-MM-DD HH:MM> · <harness> · <model> <effort>
+# <card> · <YYYY-MM-DD HH:MM> · <harness> · <model> <effort> · took <N> min
 
 ## done
 - <what changed, one line each>
@@ -368,6 +393,7 @@ NEXT TASK         : <task in words>
 RECOMMENDED AI    : <model · effort>
 Why this tier     : <one line naming the failure mode>
 Saved             : <paths of the entry and any document, or "not saved: <reason>">
+Took              : <N> min, orient to save
 ────────────────────────────────
 ```
 

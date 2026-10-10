@@ -151,6 +151,10 @@ M2 finish · Sonnet 5 extended · tests gate every criterion
 
 Rules:
 
+- The title line may end `· took <N> min`: wall-clock minutes from orient
+  to save. Optional for readers, written by every session following
+  `SKILL.md`, so time per session can be read off the ledger and compared
+  before and after a protocol change.
 - All eight headings, always, in this order. An empty one says `none`, so a
   missing heading means "forgot", never "nothing happened".
 - Every `decided` and `rejected` line carries its reason after ` — `.
