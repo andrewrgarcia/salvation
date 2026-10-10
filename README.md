@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/salvation.png" alt="Salvation" width="640"/>
+  <img src="assets/salvation.png" alt="Salvation" width="300"/>
 </p>
 
 <h1 align="center">Salvation</h1>
@@ -26,9 +26,6 @@ Cowork, Claude Code, Codex, Cursor or a terminal.
 
 Each is replaceable. Anything that reads and writes the files `SPEC.md`
 describes conforms; a session with no tools installed can follow it by hand.
-
-Named, with a nod, after another Andrew Ryan's city — but this one is meant to
-hold.
 
 ## License
 

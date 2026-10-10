@@ -99,15 +99,25 @@ prints its card. Token cost per part is on stderr.
 3. **Linked files** — each `<!-- fur:msg … link=<file> -->` line in
    `convo.md`, oldest first, names a file in the same folder. Classify by first
    line only: `<!-- dk:session` is an entry, `<!-- dk:doc` is a document,
-   anything else is chatter to ignore. Never follow a link that is absolute or
+   `<!-- dk:issue` an issue, anything else is chatter to ignore. Never follow a link that is absolute or
    has `..`; say so. A missing link gets one line.
 4. **Sessions, newest first** — the newest three entries whole, separated by
-   `---`. Older ones as one line each under `### earlier`:
-   `- SES-<stamp> · <first line of its ## next> · <date>`.
-5. **Documents** — never inlined, never counted among the three. One line each
-   under `### documents`: `- DOC-<name> · <title> · <status> · <~tokens> · <date>`.
+   `---`. The next ten as one line each under `### earlier`:
+   `- SES-<stamp> · <first line of its ## next> · <date>`; anything older is
+   one line, `- … <n> older entries in <folder>`.
+5. **Documents and issues** — never inlined, never counted among the three.
+   One line each under `### documents`:
+   `- DOC-<name> · <title> · <status> · <~tokens> · <date>`, and under
+   `### issues`, open ones only (`<!-- dk:issue`, `status: open`):
+   `- ISSUE-<name> · <title> · open · <~tokens> · <date>`.
    Open one in full only when the task needs it, and say that you did.
-6. **Code** — if the card has `white:` or the project has `WHITE.md`, run
+   Never read `<book>/archive/`: it holds finished work (SPEC D6).
+6. **Code** — first each place's commit state, read from git, never from
+   prose: with a shell, `git status --porcelain --branch` and `git log -1`
+   (this is the `git:` line `dk resume` prints); without one, the last line of
+   `<place>/.git/logs/HEAD` gives the last commit's time and message, and
+   uncommitted changes cannot be seen — say so. Then, if the card has `white:`
+   or the project has `WHITE.md`, run
    `ygg --white <manifest> --out <temp>` from the project folder and read the
    index. No shell: read the manifest and list the files with sizes. One
    block per place when the card has several. No manifest: say so; never load
@@ -123,7 +133,10 @@ current unless a later paste says otherwise.
 2. **Next** — the newest entry's `next`, with the model and effort it names.
 3. **Open items** — the newest entry's `blockers`, labelled *claimed,
    unverified* unless the card's ticked boxes or other evidence show them done.
-   Only the newest entry counts; older blockers are stale.
+   Only the newest entry counts; older blockers are stale. A claim about
+   commit or push state anywhere in the card or an entry ("uncommitted",
+   "commit ~/x") is stale by default: check it against the `git:` line or git
+   itself, or report it as unverified. Never repeat it as fact.
 4. **What you could not load** — no `dk`, no code index, an unreadable file —
    and which path (A/B/C) you took.
 
@@ -144,7 +157,13 @@ Then wait. Do not start work the user has not asked for.
   dk note <card> --section "open questions" "<a question>"
   ```
 
-  Add freely; never reword or delete what the user wrote. `dk write <card> -`
+  Add freely; never reword or delete what the user wrote (the sweep at save
+  moves ticked boxes to the archive word for word: that is the one
+  exception). An open box is one line: if an item needs a paragraph, write it
+  as an issue (`ISSUE-YYYYMMDD-<slug>.md`, `<!-- dk:issue v1 -->`, a title,
+  `status: open`) in the card's conversation and put one line on the card
+  pointing at it. If `## card` opens with an over-budget line, say so in the
+  report and propose items to move; move them only when the user agrees. `dk write <card> -`
   (whole card) only when the user asks for a restructure. Every one of these
   keeps the previous version: `dk undo <card>` swaps it back, so say which you
   ran. On path B make the same edits as minimal file edits.
@@ -242,6 +261,14 @@ only what was said or done; never record your own advice as the user's
 decision unless they took it. Under about 40 lines: the newest three are
 loaded whole by every resume.
 
+**`state` and `blockers` describe the work, not the repository.** Never write
+commit, push or working-tree status into an entry or the card
+("uncommitted", "commit ~/x", "not pushed"). It is true at close and false
+after the next `git commit`, which happens between sessions, where no one
+updates the card; the next session then reads it as current. git is the
+record of that, and the resume reads it fresh. A blocker is a human action git
+cannot show: a review, a decision, a run on real hardware.
+
 ### The document — `DOC-YYYYMMDD-<slug>.md`
 
 Starts `<!-- dk:doc v1 -->`, a `# <title>`, then `status: draft | adopted |
@@ -266,6 +293,13 @@ files, appends the markers, sets the card's `state:` from the entry's
 refuses a malformed entry or an ambiguous `--tick` before writing anything; fix
 what it names and run it again. Its stdout lists the files written: that is
 your evidence for "Saved" in the footer.
+
+With SPEC D6 in docket, `dk save` also sweeps the ticked boxes to the archive,
+takes issue files (`--issue <issue.md>`), and commits what it wrote to the
+book. If `dk sweep --help` fails, this docket predates D6: after `dk save`,
+do the sweep by hand (§3, step 4) and commit only the files written, with
+`git -C <book> commit -m "dk save <card>: <first line of next>" -- <files>`.
+Never push.
 
 ### Where (path B, by hand — and what `dk save` does for you)
 
@@ -295,10 +329,14 @@ your evidence for "Saved" in the footer.
 3. **Append** one marker per new file to `convo.md` — a blank line, then
    `<!-- fur:msg id=<uuid v4> avatar=claude ts=<RFC3339 UTC> link=<file> -->`
    (`sha256=<hex>` optional). Never rewrite or reorder the file.
-4. **Card write-back, exactly three changes:** replace the first `state:` line
-   in `## now` with the entry's state (insert one if missing); tick `[ ]` →
-   `[x]` for items finished, matched by existing text, never reworded; append
-   new `[ ]` items to the end of `## next`. Nothing else in the card moves.
+4. **Card write-back, exactly three changes and a sweep:** first move every
+   box that is *already* `[x]` (with its indented continuation lines,
+   verbatim) to the end of `<book>/archive/<name>-<id>.md` under
+   `## <YYYY-MM-DD> · swept from <section>`; then replace the first `state:`
+   line in `## now` with the entry's state (insert one if missing); tick
+   `[ ]` → `[x]` for items finished, matched by existing text, never
+   reworded; append new `[ ]` items to the end of `## next`. Nothing else in
+   the card moves. Boxes ticked now stay until the next save.
 5. **Verify from disk, then tell the truth.** Re-read each file you wrote
    (not the tool's "written" reply); check the markers are the last lines of
    `convo.md`; use a fresh output name per write. With `dk`, `dk resume
@@ -328,9 +366,10 @@ Saved             : <paths of the entry and any document, or "not saved: <reason
 NEXT TASK is the first open, unblocked item on the card in order — unless the
 current task is unfinished, in which case it is *finishing it*. Blockers names
 the human action ("review the coordinate math in `frame.rs`"), not a vague
-dependency. `state`, `blockers` and `next` are the same text in the entry and
-the footer. If you cannot name the failure mode in one line, you have not
-picked the tier deliberately.
+dependency, and never "commit" or "push" — git shows those itself. `state`,
+`blockers` and `next` are the same text in the entry and the footer. If you
+cannot name the failure mode in one line, you have not picked the tier
+deliberately.
 
 ## Reference — the commands
 
@@ -339,7 +378,7 @@ dk                         # the list (several books: the index)
 dk add <path>              # new card; no path = an idea
 dk <card> / dk show <card> # read a card
 dk edit <card>             # edit it in the terminal
-dk resume <card> --out F   # RESUME.md: card → ledger → code index (F = - prints it)
+dk resume <card> --out F   # RESUME.md: card → ledger → git line + code index (F = - prints it)
 dk resume <card> --place L # one of several places
 dk here                    # which card owns this folder
 dk book                    # the books; -b <book> or book/card for one command
