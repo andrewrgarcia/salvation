@@ -143,6 +143,37 @@ are limits, not advice:
    read the clock (never guess) at orient and at save and end the title with
    it. That number is how the user checks these rules work; `dk stats` reads it.
 
+### Loop mode — set by who can tell the result is wrong
+
+How long you work without the user depends on what can judge the result, not
+on how big the task is. When only the user can see a mistake, a machine loop is
+the model grading itself: it burns tokens and the user's waiting time, and the
+mistake survives. The user's correction is the next iteration.
+
+- **`loop: short`** — the default. It is the mode whenever only the user can
+  tell a result is wrong: computational research, semantic or modelling
+  choices, anything whose error compiles and runs. Do one pass: make the
+  change, run at most one cheap check that it runs at all, then hand back what
+  you did and what to look at. No review of your own output, no extra tests or
+  variants nobody asked for, no second opinion from a subagent. If the cheap
+  check fails, make one fix and rerun once; if it still fails, stop and report
+  the exact error. Hand back within minutes, not half an hour.
+- **`loop: long until <check>`** — only when a machine can judge the result: a
+  test suite, a benchmark target, a type-checker, a named command that must
+  exit 0. Iterate against that check alone. Caps are `max <n> tries` and
+  `max <m> min` if the line gives them, else 10 tries and 30 minutes. At a
+  cap, or when the same failure repeats three times, stop and report. Never
+  widen the task or weaken the check to make it pass. A `long` with no named
+  check is `short`.
+
+Where it is set: the card's header `loop:` line; else `loop = "..."` in the
+book's `BOOK.toml`; else `short`. The user's word in chat ("short", "go long
+until cargo test passes") overrides both for that session. A project skill's
+own verify step (MER's isolated verifier) is not a self-review loop and stays.
+
+Say the mode when you report the path (§1). In the entry's `done`, a step that
+took more than one try says how many and why.
+
 ## 1. Orient — before any work
 
 **A:** `dk resume <card> --out -` prints the resume straight to you (or
@@ -155,7 +186,7 @@ prints its card. Token cost per part is on stderr.
 **B, hand path**, same order and same output:
 
 1. **Card** — `<book>/<name>.md`, by name or a prefix of its `id:`. Keep all
-   of it above `## readme`. Note `id:` (8 hex), `path:`, `place:` and `white:`.
+   of it above `## readme`. Note `id:` (8 hex), `path:`, `place:`, `white:` and `loop:`.
 2. **Ledger** — the one `<book>/sessions/chats/*/convo.md` whose front-matter
    `tags:` holds `dk-<id>`. None: `[no sessions yet]`. Two or more: stop and
    name the folders; do not pick. Unreadable as text: say the archive may be
@@ -202,7 +233,7 @@ current unless a later paste says otherwise.
    "commit ~/x") is stale by default: check it against the `git:` line or git
    itself, or report it as unverified. Never repeat it as fact.
 4. **What you could not load** — no `dk`, no code index, an unreadable file —
-   and which path (A/B/C) you took.
+   and which path (A/B/C) and loop mode you took.
 
 Then wait. Do not start work the user has not asked for.
 
@@ -215,6 +246,7 @@ Then wait. Do not start work the user has not asked for.
   ```bash
   dk set <card> state "<task in words · criteria met/remaining>"
   dk set <card> status paused            # any header field; `place <label> <path>`
+  dk set <card> loop "long until cargo test passes"   # or short; see Loop mode
   dk todo <card> "<discovered item>"     # an open box at the end of ## next
   dk tick <card> "<text of a box you finished>"
   dk note <card> "<a fact the next session needs>"            # ## notes
