@@ -54,7 +54,39 @@ complete instruction.
 
 ## 0. Find out where you are
 
-Decide this once, at the start, and say which path you took.
+Decide this once, at the start, and say which path you took — **after** the
+reachability check below, never before it.
+
+**Reachability check — all four steps, before choosing a path.** "The book is
+not reachable" is a claim about the world. Make it only when this check has
+proved it, never as a default.
+
+1. **Where the book is.** In this order: a path the user gave; the user's
+   memory, profile, preferences or project notes (a recorded book path such
+   as "my docket is ~/notes/docket" *is* the book); `dk where` if a shell
+   exists. A path you know is a path you have. "Not connected yet" never
+   means "unknown".
+2. **Which tools reach the computer.** Read the whole tool list, including
+   tools that must be loaded or searched for before use: a shell on the
+   user's machine, tools that list, stage or write the user's files, a tool
+   that requests folder access. A tool that is listed but not yet loaded
+   counts as present: load it.
+3. **Get access.** If the book is not already a connected folder and a
+   folder-access tool exists, request the book's folder, once, with a
+   one-line reason, *before* saying anything about access. If the
+   conversation gets linked to the computer later, run the check again
+   at that point.
+4. **Only now choose A, B or C.** Path C is allowed only when one of these
+   holds, and you name which: (a) no tool can reach the user's computer,
+   even after searching for one; (b) the access request was declined, or got
+   no answer (then say the computer may be asleep or the app closed);
+   (c) no book path is known from step 1, and you asked the user for it.
+
+**Never say** "not reachable", "no access", "I can't see your book" or "not
+saved: book not reachable" unless step 4 holds. Even then, give the real
+reason ("you declined access to the book folder", "this chat isn't linked to
+your computer"), never the generic phrase. Falling back to C with a known
+path and an unused access tool is a protocol violation, not a fallback.
 
 - **A — a shell with `dk`.** You can run commands on the user's machine and
   `dk --version` answers. Use the fast paths below: `dk resume` to orient,
@@ -72,8 +104,12 @@ folder: on path A run `dk here` from it; on path B read the header of each
 top-level card in the book and take the one whose `path:` or a `place:`
 contains that folder (the deepest match wins; two cards tied: ask which). On
 path C ask for `dk resume "$(dk here)"` run from that folder. **The book must
-be reachable** for A and B: if it is not connected, ask once for that folder
-(`dk where` prints it), and do nothing else until it is.
+be reachable** for A and B: if it is not connected, request it as in step 3
+above, and do nothing else until that request has an answer.
+
+**Never invent a card name.** A card is named by the book, not by a memory
+file, a topic or a guess. If you cannot read the book, say the card is unknown
+and ask for it.
 
 A project with **no card yet** gets one before anything else: `dk add <path>`
 (no path = an idea), then a `WHITE.md` in the repo listing the files that
@@ -378,7 +414,7 @@ files in the footer's Saved line (it is not a blocker: git shows it).
    <card>` should now show the new entry first. Say what was saved and where.
    A failed write is reported, never claimed.
 
-### Path C — nothing can be written
+### Path C — nothing can be written (only when §0 step 4 holds)
 
 Print the entry (and document) in fenced blocks and, under them, the exact
 marker lines to append and the folder to put them in. Then the footer.
@@ -394,7 +430,7 @@ Blockers          : <human action, or "none">
 NEXT TASK         : <task in words>
 RECOMMENDED AI    : <model · effort>
 Why this tier     : <one line naming the failure mode>
-Saved             : <paths of the entry and any document, or "not saved: <reason>">
+Saved             : <paths of the entry and any document, or "not saved: <the §0 step-4 reason, in specific words>">
 Took              : <N> min, orient to save
 ────────────────────────────────
 ```
