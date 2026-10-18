@@ -232,13 +232,30 @@ current unless a later paste says otherwise.
    commit or push state anywhere in the card or an entry ("uncommitted",
    "commit ~/x") is stale by default: check it against the `git:` line or git
    itself, or report it as unverified. Never repeat it as fact.
-4. **What you could not load** — no `dk`, no code index, an unreadable file —
+4. **What is on the machine** — the card's `## machine` lines that are not
+   marked cleaned up (§2, "Write down what you leave on the machine"), or
+   "none recorded".
+5. **What you could not load** — no `dk`, no code index, an unreadable file —
    and which path (A/B/C) and loop mode you took.
 
 Then wait. Do not start work the user has not asked for.
 
 ## 2. Work — stay in lane, read what you touch
 
+- **The work goes in the project, not the book.** Whatever the user will
+  read, run or revise — paper text, code, configs, specs, data, figures — is
+  written into the project's own files (the card's `path:` and `place:`
+  folders) during the session, as soon as it exists. The book holds the
+  record *about* the work (card, entries, documents): a `DOC`, an entry or a
+  chat message is never where a deliverable lives. Folders on the card are
+  permission enough; write there without asking. On path C, print the whole
+  file for the user to save. If the user cannot open the file and see the
+  change, the task is not done.
+- **A write is done when you have read it back.** After every write to the
+  user's machine, read the file back from their disk (its size and a
+  distinctive line at least), never from your own copy or the tool's
+  "written" reply: a write tool can report success and deliver stale content.
+  Use a fresh output name per write.
 - **Keep the card current as you go (path A).** The card is shared state, not
   the user's private diary, and a fact settled in this session belongs on it
   when it is settled, not only at close:
@@ -266,6 +283,29 @@ Then wait. Do not start work the user has not asked for.
   keeps the previous version: `dk undo <card>` swaps it back, so say which you
   ran. On path B make the same edits as minimal file edits.
 
+- **Write down what you leave on the machine.** Other sessions, in parallel
+  or later, cannot see your temp files, caches, background jobs or memory use,
+  and will assume the machine is empty. On some machines `/tmp` is memory
+  (`df -h /tmp` shows `tmpfs`), so a file there takes RAM until it is
+  deleted. Whenever this session, or a job it starts, writes outside the
+  project and the book (`/tmp`, a cache, a scratch folder), or starts
+  something long-running, parallel or memory-heavy (a model run, a build, a
+  server, a container), record it on the card's `## machine` section **when it
+  starts**, not at close:
+
+  ```bash
+  dk note <card> --section machine "<date> · <what> · <where> · <size or memory> · cleans itself: <yes | no — remove with <command>>"
+  ```
+
+  Measure, don't guess (`du -sh`, `free -h`, `ps -o rss= -p <pid>`); write
+  "estimated" when you cannot. When it is gone or fixed, add that to the same
+  line ("removed <date>", "cleans itself since <commit>"); never delete the
+  line, since it tells the next session what this work costs. Before starting
+  anything heavy, read this card's `## machine` and run `df -h /tmp; free -h`;
+  with other projects open in parallel, `grep -A12 '^## machine' <book>/*.md`
+  shows theirs. Name such paths in the entry's `## files` too, as
+  `- <path> — scratch, <size>, <removed | left>`. This only records: it never
+  caps, cleans up or stops another session's work without the user.
 - **The code part is a map, not the territory.** It lists files; it does not
   contain them. Before changing a file or describing what it does, open it
   (shell) or ask for it. Never describe code from its name and size. Never
@@ -323,7 +363,9 @@ Two things may be saved. **An entry, every time.** **A document**, only when
 the session produced reasoning worth rereading whole (an option analysis, a
 phased plan, a draft spec): if a `decided` line cannot hold its reason in one
 line, the reason is a document. A spec the *code* obeys goes in the repo (e.g.
-`docs/`), not the ledger; ask before writing into a repo.
+`docs/`), not the ledger, and so does any text meant for the project (a
+paper section, a README): write it there (§2). A document records why; it
+never replaces writing the thing itself.
 
 ### The entry — `SES-YYYYMMDD-HHMMSS.md`, UTC, all eight headings, this order
 
@@ -353,7 +395,7 @@ line, the reason is a document. A spec the *code* obeys goes in the repo (e.g.
 - <path> — <new | changed | removed>
 ```
 
-An empty section says `none`. Every `decided`/`rejected` line carries its
+An empty section says `none`. `## files` lists the project files changed first, then book files; a session that produced work for the project but lists only book files has not delivered it. Every `decided`/`rejected` line carries its
 reason or points at a document — `rejected` is why this ledger exists. Record
 only what was said or done; never record your own advice as the user's
 decision unless they took it. Under about 40 lines: the newest three are
